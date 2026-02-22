@@ -268,7 +268,48 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        actions = gameState.getLegalActions(0)
+        value = float('-inf')
+        optimal_action = None
+
+        for action in actions:
+            succesorState = gameState.generateSuccessor(0, action)
+            state_value = self.expectimaxHelper(succesorState, 1, 0)
+            if state_value > value:
+                value = state_value
+                optimal_action = action
+        return optimal_action
+
+    def expectimaxHelper(self, gameState: GameState, agentIndex: int, depth: int):
+        if gameState.isWin() or gameState.isLose() or depth == self.depth:
+            return self.evaluationFunction(gameState)    
+           
+        actions = gameState.getLegalActions(agentIndex)
+        next_agent_index = (agentIndex + 1) % gameState.getNumAgents()
+        if next_agent_index == 0:
+            next_depth = depth + 1
+        else:
+            # depth only advances after a ply/full turn
+            next_depth = depth
+        
+        # must be pacman/maximizer
+        if agentIndex == 0:
+            max_value = float('-inf')
+            for action in actions:
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                max_value = max(max_value, self.expectimaxHelper(successorState, next_agent_index, next_depth))
+            return max_value
+        # must be a ghost/minimizer
+        else:
+            # CUMULATIVE VALUE
+            cum_value = 0
+            for action in actions:
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                cum_value += self.expectimaxHelper(successorState, next_agent_index, next_depth)
+            return cum_value / len(actions)
+    
+
+    
 
 def betterEvaluationFunction(currentGameState: GameState):
     """
