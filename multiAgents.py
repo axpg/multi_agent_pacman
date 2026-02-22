@@ -206,7 +206,54 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        actions = gameState.getLegalActions(0)
+        value = float('-inf')
+        alpha = float('-inf')
+        beta = float('inf')
+        optimal_action = None
+
+        for action in actions:
+            succesorState = gameState.generateSuccessor(0, action)
+            state_value = self.AlphaBetaHelper(succesorState, 1, 0, alpha, beta)
+            if state_value > value:
+                value = state_value
+                optimal_action = action
+            alpha = max(alpha, value)
+        return optimal_action
+    
+    def AlphaBetaHelper(self, gameState: GameState, agentIndex: int, depth: int, alpha: int, beta: int):
+        if gameState.isWin() or gameState.isLose() or depth == self.depth:
+            return self.evaluationFunction(gameState)    
+           
+        actions = gameState.getLegalActions(agentIndex)
+        next_agent_index = (agentIndex + 1) % gameState.getNumAgents()
+        if next_agent_index == 0:
+            next_depth = depth + 1
+        else:
+            # depth only advances after a ply/full turn
+            next_depth = depth
+        
+        # must be pacman/maximizer
+        if agentIndex == 0:
+            max_value = float('-inf')
+
+            for action in actions:
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                max_value = max(max_value, self.AlphaBetaHelper(successorState, next_agent_index, next_depth, alpha, beta))
+                if max_value > beta:
+                    return max_value
+                alpha = max(alpha, max_value)
+            return max_value
+        # must be a ghost/minimizer
+        else:
+            min_value = float('inf')
+            for action in actions:
+                successorState = gameState.generateSuccessor(agentIndex, action)
+                min_value = min(min_value, self.AlphaBetaHelper(successorState, next_agent_index, next_depth, alpha, beta))
+                if min_value < alpha:
+                    return min_value
+                beta = min(beta,min_value)
+            return min_value
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
