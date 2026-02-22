@@ -316,10 +316,36 @@ def betterEvaluationFunction(currentGameState: GameState):
     Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
     evaluation function (question 5).
 
-    DESCRIPTION: <write something here so we know what you did>
+    DESCRIPTION: Just copied over my q1 implementation.
+    Take the game score as a baseline, and we should REWARD closeness to a food pellet. Cannot just add by distance,
+    as a closer pellet will add less, so add the reciporocal. 
+
+    Punish similarly for the closest ghost. Punish hard if a ghost is very close. 
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+
+    # simple function: reward closeness to food, penalize closeness to ghost        
+    score = currentGameState.getScore()
+    ghost_dist = float('inf')
+    food_dist = float('inf')
+
+    for food in newFood.asList():
+        dist = util.manhattanDistance(newPos, food)
+        food_dist = min(food_dist, dist)
+    
+
+    for ghost in newGhostStates:
+        dist = util.manhattanDistance(newPos, ghost.getPosition())
+        if dist > 0:
+            ghost_dist = min(ghost_dist, dist)
+        if dist == 1:
+            return score - 100
+        
+    return score + (8/food_dist) - (2/ghost_dist)
 
 # Abbreviation
 better = betterEvaluationFunction
